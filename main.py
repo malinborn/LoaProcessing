@@ -153,13 +153,20 @@ def pack_up(loa: list[Asset]) -> list[list[str, bool, None]]:
     return package
 
 
-if __name__ == "__main__":
+def main(load_with_cache=None):
     logger.debug("retrieving google service...")
     google_service = build_google_service(PATH)
-    logger.info("autorized to google")
+    logger.info("authorized to google")
+    pprint(load_with_cache)
 
-    if not os.path.isfile("stored.pickle"):
-        logger.debug("loading from google...")
+    if os.path.isfile("stored.pickle") and load_with_cache:
+        logger.debug("loading from file...")
+        with open("stored.pickle", "rb") as fp:
+            assets = pickle.load(fp)
+    else:
+        if load_with_cache:
+            logger.info("seems like there is no cache")
+        logger.info("loading from google...")
         logger.debug("retrieving main table, inventory sheet...")
         raw_main_table: list[list[str, ...]] = get_main_table(google_service)["values"]
         main_table: list[Survey, ...] = survey_to_domain(raw_main_table)
@@ -167,27 +174,33 @@ if __name__ == "__main__":
         # pprint(main_table)
         logger.info("obtained main table, inventory sheet")
 
-        logger.debug("collecting assets from sub tables...")
+        logger.info("collecting assets from sub tables...")
         assets = collect_assets_from_sub_tables(main_table, google_service)
         # pprint(assets)
         logger.info(f"collected assets from sub tables...")
 
-        logger.debug("dumping data into file...")
+        logger.info("dumping data into file...")
         with open("stored.pickle", "wb") as fp:
             pickle.dump(assets, fp)
-    else:
-        logger.debug("loading from file...")
-        with open("stored.pickle", "rb") as fp:
-            assets = pickle.load(fp)
 
-    logger.debug(f"preparing data for {str(LOA_OPTION.name)}...")
+    logger.info(f"preparing data for {str(LOA_OPTION.name)}...")
     loa = prepare_data(assets)
     pprint(loa)
     print(len(loa))
     logger.info(f"prepared data for {str(LOA_OPTION.name)}")
 
-    logger.debug(f"uploading data for {str(LOA_OPTION.name)} LOA...")
+    logger.info(f"uploading data for {str(LOA_OPTION.name)} LOA...")
     upload(pack_up(loa), google_service)
     logger.info(f"uploaded data for {str(LOA_OPTION.name)} LOA")
 
     logger.info("all done, shutting down...")
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Script to compute LOA, check README")
+    parser.add_argument("--cache", type=bool, help="If you want to load from cache, pass \"True\"")
+
+    args = parser.parse_args()
+    main(args.cache)
