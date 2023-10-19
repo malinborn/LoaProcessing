@@ -49,22 +49,17 @@ def collect_assets_from_sub_tables(main_table: list[Survey], google_service):
         try:
             logger.debug(f"getting data for {survey.department} {survey.unit}...")
             subtable_raw_assets: list[list] = google_service.get_values(survey.link, "Лист1")["values"]
-            logger.debug(f"data of {survey.department} {survey.unit}:")
-            # pprint(subtable_raw_assets)
+
             logger.debug(f"trying to merge into domain data of {survey.department} {survey.unit}...")
             subtable_assets: list[Asset] = [Asset(clarified_row, survey) for clarified_row in
                                             [row for row in subtable_raw_assets if row[0] != ""][1:]]
-            # pprint(subtable_assets)
-            logger.debug(
-                f"extending subtable_assets with data driven to domain of {survey.department} {survey.unit}...")
+
             subtables_assets.extend(subtable_assets)
-            # print(len(subtables_assets))
-            # from time import sleep
-            # sleep(10)
         except Exception as ex:
             logger.error(f"couldn't get survey of {survey.department} {survey.unit}"
                          f"\n{ex}")
         bar.next()
+        print("")
         sleep(1)  # it is needed to comply with Google API quotas
     return subtables_assets
 
@@ -82,40 +77,34 @@ def loa_handler_general(assets: list[Asset]) -> list[Asset]:
         else:
             asset_index = added_names.index(asset.name)
 
-            if asset.is_in_pci_dss_scope == True:
+            if asset.is_in_pci_dss_scope:
                 resulting[asset_index].is_in_pci_dss_scope = True
 
-            if asset.has_iid == True:
-                resulting[asset_index].is_in_pci_dss_scope = True
+            if asset.has_iid:
+                resulting[asset_index].has_iid = True
 
             if asset.sensitive_data_description != resulting[
                 asset_index].sensitive_data_description and asset.sensitive_data_description != "":
-                resulting[asset_index].sensitive_data_description = (
-                        resulting[asset_index].sensitive_data_description + ", "
-                        + asset.sensitive_data_description)
+                resulting[asset_index].sensitive_data_description.extend(asset.sensitive_data_description)
 
             if asset.business_owner != resulting[asset_index].business_owner and asset.business_owner != "":
-                resulting[asset_index].business_owner = (resulting[asset_index].business_owner + ", "
-                                                         + asset.business_owner)
-            if asset.business_owner == "-":
-                resulting[asset_index].business_owner = "-"
-
-            if "-" in resulting[asset_index].business_owner:
-                resulting[asset_index].business_owner = "-"
+                resulting[asset_index].business_owner.extend(asset.business_owner)
 
             if asset.purpose != resulting[asset_index].purpose and asset.purpose != "":
-                resulting[asset_index].purpose = (resulting[asset_index].purpose + ", "
-                                                  + asset.purpose)
+                resulting[asset_index].purpose.extend(asset.purpose)
 
-            if resulting[asset_index].access_owner == "-":
-                resulting[asset_index].access_owner = asset.access_owner
+            if asset.access_owner != resulting[asset_index].access_owner and asset.access_owner != "":
+                resulting[asset_index].access_owner.extend(asset.access_owner)
 
             if asset.comments != resulting[asset_index].comments and asset.comments != "":
-                resulting[asset_index].comments = (resulting[asset_index].comments + ", "
-                                                   + asset.comments)
+                resulting[asset_index].comments.extend(asset.comments)
 
             resulting[asset_index].department_and_unit = (resulting[asset_index].department_and_unit.strip()
                                                           + "; " + asset.department_and_unit.strip())
+    logger.debug("collapsing doubling entities...")
+    for asset in resulting:
+        asset.collapse()
+    logger.debug("doubling entities collapsed")
 
     return resulting
 
@@ -135,6 +124,7 @@ def prepare_data(assets: list[Asset]) -> list[Asset]:
 @logger.catch()
 def survey_to_domain(raw_main_table: list[list[str, ...]]) -> list[Survey, ...]:
     return [Survey(x) for x in raw_main_table]
+
 
 @logger.catch()
 def upload(loa_package: list[list[str | bool]], google_service):
