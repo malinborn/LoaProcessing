@@ -131,7 +131,7 @@ def survey_to_domain(raw_main_table: list[list[str, ...]]) -> list[Survey, ...]:
 
 @logger.catch()
 def upload(loa_package: list[list[str | bool]], google_service):
-    google_service.upload_values(loa_package, "'LoA_raw'!A2:L1000")
+    google_service.upload_values(loa_package, "'LoA_raw'!A2:Z1000")
 
 
 def pack_up(loa: list[Asset]) -> list[list[str, bool, None]]:
@@ -186,7 +186,6 @@ def main(load_with_cache=None):
     logger.debug("retrieving google service...")
     google_service = build_google_service(PATH)
     logger.info("authorized to google")
-    pprint(load_with_cache)
 
     if (not os.path.isfile("stored.pickle") and load_with_cache) or not load_with_cache:
         if not os.path.isfile("stored.pickle"):
@@ -212,7 +211,9 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Script to compute LOA, check README")
-    parser.add_argument("--cache", type=bool, help="If you want to load from cache, pass \"True\"")
-
+    parser.add_argument("--cache", type=str, help="If you want to load from cache, pass \"True\"")
     args = parser.parse_args()
-    main(args.cache)
+
+    cache_option = True if args.cache == "True" else False
+
+    main(cache_option)

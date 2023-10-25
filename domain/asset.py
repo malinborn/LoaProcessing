@@ -4,15 +4,15 @@ from domain.common import shorten_text_repr
 
 class Asset:
     name_index = 0
-    type_index = name_index + 1
-    is_in_pci_dss_scope_index = type_index + 1
-    has_iid_clients_index = is_in_pci_dss_scope_index + 1
-    has_iid_employees_index = has_iid_clients_index + 1
-    sensitive_data_description_index = has_iid_clients_index + 1
-    business_owner_index = sensitive_data_description_index + 1
-    purpose_index = business_owner_index + 1
-    access_owner_index = purpose_index + 1
-    comments_index = access_owner_index + 1
+    type_index = 1
+    is_in_pci_dss_scope_index = 2
+    has_iid_clients_index = 3
+    has_iid_employees_index = 4
+    sensitive_data_description_index = 5
+    business_owner_index = 6
+    purpose_index = 7
+    access_owner_index = 8
+    comments_index = 9
 
     def __init__(self, raw_asset: list[str | bool | None], survey: Survey):
         self.name: str = raw_asset[Asset.name_index].strip()
@@ -27,23 +27,23 @@ class Asset:
         self.comments: list[str] | str = list()
 
         try:
-            if raw_asset[Asset.sensitive_data_description_index]: self.sensitive_data_description.append(raw_asset[4])
+            if raw_asset[Asset.sensitive_data_description_index]: self.sensitive_data_description.append(raw_asset[Asset.sensitive_data_description_index])
         except IndexError:
             ""
         try:
-            if raw_asset[Asset.business_owner_index]: self.business_owner.append(raw_asset[5])
+            if raw_asset[Asset.business_owner_index]: self.business_owner.append(raw_asset[Asset.business_owner_index])
         except IndexError:
             ""
         try:
-            if raw_asset[Asset.purpose_index]: self.purpose.append(raw_asset[6])
+            if raw_asset[Asset.purpose_index]: self.purpose.append(raw_asset[Asset.purpose_index])
         except IndexError:
             ""
         try:
-            if raw_asset[Asset.access_owner_index]: self.access_owner.append(raw_asset[7])
+            if raw_asset[Asset.access_owner_index]: self.access_owner.append(raw_asset[Asset.access_owner_index])
         except IndexError:
             ""
         try:
-            if raw_asset[Asset.comments_index]: self.comments.append(raw_asset[8])
+            if raw_asset[Asset.comments_index]: self.comments.append(raw_asset[Asset.comments_index])
         except IndexError:
             ""
 
