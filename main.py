@@ -80,8 +80,11 @@ def loa_handler_general(assets: list[Asset]) -> list[Asset]:
             if asset.is_in_pci_dss_scope:
                 resulting[asset_index].is_in_pci_dss_scope = True
 
-            if asset.has_iid:
-                resulting[asset_index].has_iid = True
+            if asset.has_iid_clients:
+                resulting[asset_index].has_iid_clients = True
+
+            if asset.has_iid_employees:
+                resulting[asset_index].has_iid_employees = True
 
             if asset.sensitive_data_description != resulting[
                 asset_index].sensitive_data_description and asset.sensitive_data_description != "":
@@ -139,7 +142,8 @@ def pack_up(loa: list[Asset]) -> list[list[str, bool, None]]:
             asset.name,
             asset.type,
             asset.is_in_pci_dss_scope,
-            asset.has_iid,
+            asset.has_iid_clients,
+            asset.has_iid_employees,
             asset.sensitive_data_description,
             asset.business_owner,
             asset.purpose,

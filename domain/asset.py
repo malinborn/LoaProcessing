@@ -6,8 +6,9 @@ class Asset:
     name_index = 0
     type_index = name_index + 1
     is_in_pci_dss_scope_index = type_index + 1
-    has_iid_index = is_in_pci_dss_scope_index + 1
-    sensitive_data_description_index = has_iid_index + 1
+    has_iid_clients_index = is_in_pci_dss_scope_index + 1
+    has_iid_employees_index = has_iid_clients_index + 1
+    sensitive_data_description_index = has_iid_clients_index + 1
     business_owner_index = sensitive_data_description_index + 1
     purpose_index = business_owner_index + 1
     access_owner_index = purpose_index + 1
@@ -17,7 +18,8 @@ class Asset:
         self.name: str = raw_asset[Asset.name_index].strip()
         self.type: str = raw_asset[Asset.type_index]
         self.is_in_pci_dss_scope: bool = True if raw_asset[Asset.is_in_pci_dss_scope_index].lower() == "true" else False
-        self.has_iid: bool = True if raw_asset[Asset.has_iid_index].lower() == "true" else False
+        self.has_iid_clients: bool = True if raw_asset[Asset.has_iid_clients_index].lower() == "true" else False
+        self.has_iid_employees: bool = True if raw_asset[Asset.has_iid_employees_index].lower() == "true" else False
         self.sensitive_data_description: list[str] | str = list()
         self.business_owner: list[str] | str = list()
         self.purpose: list[str] | str = list()
@@ -68,7 +70,8 @@ class Asset:
         message = (f"| {shorten_text_repr(self.name, 25)} | "
                    f"{self.type.ljust(11)} | "
                    f"{str(self.is_in_pci_dss_scope).ljust(5)} | "
-                   f"{str(self.has_iid).ljust(5)} | "
+                   f"{str(self.has_iid_clients).ljust(5)} | "
+                   f"{str(self.has_iid_employees).ljust(5)} | "
                    f"{shorten_text_repr(self.sensitive_data_description, 25)} | "
                    f"{shorten_text_repr(self.business_owner, 25)} | "
                    f"{shorten_text_repr(self.purpose, 25)} | "

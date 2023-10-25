@@ -23,8 +23,8 @@ You need a list with all departments and units of you company, you need to manag
 
 And you need a conventional looking survey, in this configuration: 
 
-| Name | type | PCI DSS flag | PII flag | Sensetive data description | Business owner| Purpose | Access Owner | Comments |
-|------|------|--------------|----------|----------------------------|---------------|---------|--------------|----------|
+| Name | type | PCI DSS flag | PII cleints flag | PII employees flag | Sensetive data description | Business owner| Purpose | Access Owner | Comments |
+|------|------|--------------|------------------|--------------------|----------------------------|---------------|---------|--------------|----------|
 
 How exactly will you run hard inventory depends on you, maybe Dodo Brands once will decide to share their practices of internal security and I will attach a link to it here. I designed those procedures, but I made them for a company, so I'll pass a right of publication to Dodo Brands. 
 ___
