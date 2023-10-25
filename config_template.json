@@ -3,5 +3,8 @@
     "general_loa": "",
     "gdpr_loa": "",
     "finance_loa": ""
-  }
+  },
+  "asset_entities": [
+    ""
+  ]
 }

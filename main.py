@@ -140,8 +140,8 @@ def pack_up(loa: list[Asset]) -> list[list[str, bool, None]]:
             asset.type,
             asset.is_in_pci_dss_scope,
             asset.has_iid,
-            ", ".join([x for x in set(asset.sensitive_data_description.split(", ")) if x != ""]),
-            ", ".join([x for x in set(asset.business_owner.split(", ")) if x != ""]),
+            asset.sensitive_data_description,
+            asset.business_owner,
             asset.purpose,
             asset.access_owner,
             asset.comments,
@@ -153,40 +153,48 @@ def pack_up(loa: list[Asset]) -> list[list[str, bool, None]]:
     return package
 
 
+def get_assets_from_cache():
+    logger.debug("loading from file...")
+    with open("stored.pickle", "rb") as fp:
+        assets = pickle.load(fp)
+    return assets
+
+
+def get_assets_from_google(google_service):
+    logger.info("loading from google...")
+    logger.debug("retrieving main table, inventory sheet...")
+    raw_main_table: list[list[str, ...]] = get_main_table(google_service)["values"]
+    main_table: list[Survey, ...] = survey_to_domain(raw_main_table)
+    Survey.fill_departments(main_table)
+    # pprint(main_table)
+    logger.info("obtained main table, inventory sheet")
+    logger.info("collecting assets from sub tables...")
+    assets = collect_assets_from_sub_tables(main_table, google_service)
+    # pprint(assets)
+    logger.info(f"collected assets from sub tables...")
+    logger.info("dumping data into file...")
+    with open("stored.pickle", "wb") as fp:
+        pickle.dump(assets, fp)
+    return assets
+
+
 def main(load_with_cache=None):
     logger.debug("retrieving google service...")
     google_service = build_google_service(PATH)
     logger.info("authorized to google")
     pprint(load_with_cache)
 
-    if os.path.isfile("stored.pickle") and load_with_cache:
-        logger.debug("loading from file...")
-        with open("stored.pickle", "rb") as fp:
-            assets = pickle.load(fp)
-    else:
-        if load_with_cache:
+    if (not os.path.isfile("stored.pickle") and load_with_cache) or not load_with_cache:
+        if not os.path.isfile("stored.pickle"):
             logger.info("seems like there is no cache")
-        logger.info("loading from google...")
-        logger.debug("retrieving main table, inventory sheet...")
-        raw_main_table: list[list[str, ...]] = get_main_table(google_service)["values"]
-        main_table: list[Survey, ...] = survey_to_domain(raw_main_table)
-        Survey.fill_departments(main_table)
-        # pprint(main_table)
-        logger.info("obtained main table, inventory sheet")
-
-        logger.info("collecting assets from sub tables...")
-        assets = collect_assets_from_sub_tables(main_table, google_service)
-        # pprint(assets)
-        logger.info(f"collected assets from sub tables...")
-
-        logger.info("dumping data into file...")
-        with open("stored.pickle", "wb") as fp:
-            pickle.dump(assets, fp)
+        assets = get_assets_from_google(google_service)
+    else:
+        assets = get_assets_from_cache()
 
     logger.info(f"preparing data for {str(LOA_OPTION.name)}...")
     loa = prepare_data(assets)
-    pprint(loa)
-    print(len(loa))
+    # pprint(loa)
+    # print(len(loa))
     logger.info(f"prepared data for {str(LOA_OPTION.name)}")
 
     logger.info(f"uploading data for {str(LOA_OPTION.name)} LOA...")
