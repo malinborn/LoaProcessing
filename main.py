@@ -10,9 +10,6 @@ from loa_options import LoaOptions
 from pprint import pprint
 from time import sleep
 
-# Configure loa option, this depends on which teams will it get from LoA
-# Also it decides where to upload prepared data
-LOA_OPTION = LoaOptions.GENERAL
 PATH = os.getenv("GOOGLE_TOKEN_PATH")
 
 with open("config.json", "r") as fp:
@@ -182,7 +179,7 @@ def get_assets_from_google(google_service):
     return assets
 
 
-def main(load_with_cache=None):
+def main(load_with_cache: bool = None):
     logger.debug("retrieving google service...")
     google_service = build_google_service(PATH)
     logger.info("authorized to google")
@@ -212,8 +209,17 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Script to compute LOA, check README")
     parser.add_argument("--cache", type=str, help="If you want to load from cache, pass \"True\"")
+    parser.add_argument("--domain", type=str, help="Enter name of domain for which you want to collect LOA, "
+                                                   "for example, \"GDPR\", \"DE\", etc. GENERAL is default value. "
+                                                   "Make sure that you configured link to spreadsheet in config.jsom")
     args = parser.parse_args()
 
     cache_option = True if args.cache == "True" else False
+
+    match args.domain.upper():
+        case "DE" | "ENGINEERING":
+            LOA_OPTION = LoaOptions.ENGINEERING
+        case _:
+            LOA_OPTION = LoaOptions.GENERAL
 
     main(cache_option)
