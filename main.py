@@ -26,6 +26,8 @@ def build_google_service(path):
             upload_table_link = CONFIG["links"]["gdpr_loa"]
         case LoaOptions.FINANCE:
             upload_table_link = CONFIG["links"]["finance_loa"]
+        case LoaOptions.ENGINEERING:
+            upload_table_link = CONFIG["links"]["engineering_loa"]
         case _:
             raise NotImplemented
 
@@ -34,7 +36,7 @@ def build_google_service(path):
 
 @logger.catch()
 def get_main_table(google_service):
-    return google_service.get_values(google_service.main_table_id, "'Анкетирование'!A2:H1000")
+    return google_service.get_values(CONFIG["links"]["general_loa"], "'Анкетирование'!A2:H1000")
 
 
 def collect_assets_from_sub_tables(main_table: list[Survey], google_service):
@@ -109,10 +111,66 @@ def loa_handler_general(assets: list[Asset]) -> list[Asset]:
     return resulting
 
 
+def loa_handler_engineering(assets: list[Asset]) -> list[Asset]:
+    resulting: list[Asset] = list()
+    added_names = list()
+
+    de_units = ["IT Eurasia People&Communications", "IT Eurasia B2B", "NSFW (Not safe for work)", "SE (Seven-eleven)",
+                "Rocket Science", "k9", "HR Automation", "Slippers of Mimir", "IT Team", "IT"]
+    de_depos = ["CVM", "CVM Dev Core", "Vulnerable", "Guilds", "Platform"]
+    assets.sort(key=lambda x: x.name)
+
+    for asset in assets:
+        if asset.department not in de_depos and asset.unit not in de_units:
+            continue
+        if asset.name.strip() not in added_names:
+            resulting.append(asset)
+            added_names.append(asset.name.strip())
+        else:
+            asset_index = added_names.index(asset.name)
+
+            if asset.is_in_pci_dss_scope:
+                resulting[asset_index].is_in_pci_dss_scope = True
+
+            if asset.has_iid_clients:
+                resulting[asset_index].has_iid_clients = True
+
+            if asset.has_iid_employees:
+                resulting[asset_index].has_iid_employees = True
+
+            if asset.sensitive_data_description != resulting[
+                asset_index].sensitive_data_description and asset.sensitive_data_description != "":
+                resulting[asset_index].sensitive_data_description.extend(asset.sensitive_data_description)
+
+            if asset.business_owner != resulting[asset_index].business_owner and asset.business_owner != "":
+                resulting[asset_index].business_owner.extend(asset.business_owner)
+
+            if asset.purpose != resulting[asset_index].purpose and asset.purpose != "":
+                resulting[asset_index].purpose.extend(asset.purpose)
+
+            if asset.access_owner != resulting[asset_index].access_owner and asset.access_owner != "":
+                resulting[asset_index].access_owner.extend(asset.access_owner)
+
+            if asset.comments != resulting[asset_index].comments and asset.comments != "":
+                resulting[asset_index].comments.extend(asset.comments)
+
+            resulting[asset_index].department_and_unit = (resulting[asset_index].department_and_unit.strip()
+                                                          + "; " + asset.department_and_unit.strip())
+    logger.debug("collapsing doubling entities...")
+
+    for asset in resulting:
+        asset.collapse()
+    logger.debug("doubling entities collapsed")
+    
+    return resulting
+
+
 def prepare_data(assets: list[Asset]) -> list[Asset]:
     match LOA_OPTION:
         case LOA_OPTION.GENERAL:
             return loa_handler_general(assets)
+        case LOA_OPTION.ENGINEERING:
+            return loa_handler_engineering(assets)
         case LOA_OPTION.GDPR:
             raise NotImplemented
         case LOA_OPTION.FINANCE:
