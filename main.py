@@ -213,21 +213,22 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Script to compute LOA, check README")
-    parser.add_argument("mode", metavar="mode", type=str, help="\"Backsync\" - performs update on surveys by "
-                                                               "info from the general LOA. "
-                                                               "\"Collect\" - creates list of assets from surveys")
-    parser.add_argument("-c", "--cache", type=str, help="If you want to load from cache, pass \"True\"",
-                        choices=["True"])
-    parser.add_argument("-d", "--domain", type=str, help="Enter name of domain for which you want to collect LOA, "
-                                                   "for example, \"DE\", \"Finance\" etc. GENERAL is default value. "
-                                                   "Make sure that you configured link to spreadsheet in config.jsom")
+    parser.add_argument("-c", "--cache", action="store_true",
+                        help="Pass this flag if you want to perform collect mode from cache")
+    parser.add_argument("-d", "--domain", type=str,
+                        help="Enter name of domain for which you want to collect LOA, "
+                             "for example, \"DE\", \"Finance\" etc. GENERAL is default value. "
+                             "Make sure that you configured link to spreadsheet in config.jsom")
+    parser.add_argument("--mode", metavar="MODE", type=str, choices=["collect", "backsync"],
+                        help="\"Collect\" - creates list of assets from surveys, that is default mode. "
+                             "\"Backsync\" - performs update on surveys by info from the general LOA. ")
     args = parser.parse_args()
+
+    CACHE_OPTION = args.cache
 
     match args.mode.upper():
         case "backsync" | "bs" | "back_sync" | "back_synchronization": MODE = Modes.BACKSYNC
         case _:                                                        MODE = Modes.COLLECT
-
-    CACHE_OPTION = True if args.cache == "True" else False
 
     match args.domain.upper():
         case "DE" | "ENGINEERING":                                 LOA_OPTION = LoaOptions.ENGINEERING
