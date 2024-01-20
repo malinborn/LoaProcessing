@@ -1,60 +1,81 @@
 from domain.survey import Survey
 from domain.common import shorten_text_repr
+from dataclasses import dataclass
 
 
+@dataclass
 class Asset:
-    name_index = 0
-    type_index = 1
-    is_in_pci_dss_scope_index = 2
-    has_iid_clients_index = 3
-    has_iid_employees_index = 4
-    sensitive_data_description_index = 5
-    business_owner_index = 6
-    purpose_index = 7
-    access_owner_index = 8
-    comments_index = 9
+    NAME_INDEX = 0
+    TYPE_INDEX = 1
+    IS_IN_PCI_DSS_SCOPE_INDEX = 2
+    HAS_IID_CLIENTS_INDEX = 3
+    HAS_IID_EMPLOYEES_INDEX = 4
+    SENSITIVE_DATA_DESCRIPTION_INDEX = 5
+    BUSINESS_OWNER_INDEX = 6
+    PURPOSE_INDEX = 7
+    ACCESS_OWNER_INDEX = 8
+    COMMENTS_INDEX = 9
 
-    def __init__(self, raw_asset: list[str | bool | None], survey: Survey):
-        self.name: str = raw_asset[Asset.name_index].strip()
-        self.type: str = raw_asset[Asset.type_index]
-        self.is_in_pci_dss_scope: bool = True if raw_asset[Asset.is_in_pci_dss_scope_index].lower() == "true" else False
-        self.has_iid_clients: bool = True if raw_asset[Asset.has_iid_clients_index].lower() == "true" else False
-        self.has_iid_employees: bool = True if raw_asset[Asset.has_iid_employees_index].lower() == "true" else False
-        self.sensitive_data_description: list[str] | str = list()
-        self.business_owner: list[str] | str = list()
-        self.purpose: list[str] | str = list()
-        self.access_owner: list[str] | str = list()
-        self.comments: list[str] | str = list()
+    name:                       str
+    type:                       str
+    is_in_pci_dss_scope:        bool
+    has_iid_clients:            bool
+    has_iid_employees:          bool
+    sensitive_data_description: list[str] | str
+    business_owner:             list[str] | str
+    purpose:                    list[str] | str
+    access_owner:               list[str] | str
+    comments:                   list[str] | str
+    department:                 str
+    unit:                       str
+    department_and_unit:        str
+
+    @staticmethod
+    def make_from_survey(raw_asset: list[str | bool | None], survey: Survey):
+        name:                str = raw_asset[Asset.NAME_INDEX].strip()
+        type:                str = raw_asset[Asset.TYPE_INDEX]
+        is_in_pci_dss_scope: bool = True if raw_asset[Asset.IS_IN_PCI_DSS_SCOPE_INDEX].lower() == "true" else False
+        has_iid_clients:     bool = True if raw_asset[Asset.HAS_IID_CLIENTS_INDEX].lower() == "true" else False
+        has_iid_employees:   bool = True if raw_asset[Asset.HAS_IID_EMPLOYEES_INDEX].lower() == "true" else False
+        sensitive_data_description: list[str] | str = list()
+        business_owner:      list[str] | str = list()
+        purpose:             list[str] | str = list()
+        access_owner:        list[str] | str = list()
+        comments:            list[str] | str = list()
+        department:          str = survey.department
+        unit:                str = survey.unit
+        department_and_unit: str = f"{survey.department} {survey.unit}"
 
         try:
-            if raw_asset[Asset.sensitive_data_description_index]:
-                self.sensitive_data_description.append(raw_asset[Asset.sensitive_data_description_index])
+            if raw_asset[Asset.SENSITIVE_DATA_DESCRIPTION_INDEX]:
+                sensitive_data_description.append(raw_asset[Asset.SENSITIVE_DATA_DESCRIPTION_INDEX])
         except IndexError:
             ""
         try:
-            if raw_asset[Asset.business_owner_index]:
-                self.business_owner.append(raw_asset[Asset.business_owner_index])
+            if raw_asset[Asset.BUSINESS_OWNER_INDEX]:
+                business_owner.append(raw_asset[Asset.BUSINESS_OWNER_INDEX])
         except IndexError:
             ""
         try:
-            if raw_asset[Asset.purpose_index]:
-                self.purpose.append(raw_asset[Asset.purpose_index])
+            if raw_asset[Asset.PURPOSE_INDEX]:
+                purpose.append(raw_asset[Asset.PURPOSE_INDEX])
         except IndexError:
             ""
         try:
-            if raw_asset[Asset.access_owner_index]:
-                self.access_owner.append(raw_asset[Asset.access_owner_index])
+            if raw_asset[Asset.ACCESS_OWNER_INDEX]:
+                access_owner.append(raw_asset[Asset.ACCESS_OWNER_INDEX])
         except IndexError:
             ""
         try:
-            if raw_asset[Asset.comments_index]:
-                self.comments.append(raw_asset[Asset.comments_index])
+            if raw_asset[Asset.COMMENTS_INDEX]:
+                comments.append(raw_asset[Asset.COMMENTS_INDEX])
         except IndexError:
             ""
 
-        self.department: str = survey.department
-        self.unit: str = survey.unit
-        self.department_and_unit = f"{survey.department} {survey.unit}"
+        return Asset(name=name, type=type, is_in_pci_dss_scope=is_in_pci_dss_scope, has_iid_clients=has_iid_clients,
+                     has_iid_employees=has_iid_employees, sensitive_data_description=sensitive_data_description,
+                     business_owner=business_owner, purpose=purpose, access_owner=access_owner, comments=comments,
+                     department=department, unit=unit, department_and_unit=department_and_unit)
 
     def collapse(self):
         self.sensitive_data_description = Asset._collapse_entity(self.sensitive_data_description)
@@ -86,3 +107,5 @@ class Asset:
                    f"{shorten_text_repr(self.department_and_unit, 30)} | "
                    f"{shorten_text_repr(self.comments, 25)} | ")
         return message
+
+

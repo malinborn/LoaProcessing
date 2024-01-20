@@ -110,7 +110,7 @@ def collect_assets_from_sub_tables(main_table: list[Survey], google_service):
             subtable_raw_assets: list[list] = google_service.get_values(survey.link, "Лист1")["values"]
 
             logger.debug(f"trying to merge into domain data of {survey.department} {survey.unit}...")
-            subtable_assets: list[Asset] = [Asset(clarified_row, survey) for clarified_row in
+            subtable_assets: list[Asset] = [Asset.make_from_survey(clarified_row, survey) for clarified_row in
                                             [row for row in subtable_raw_assets if row[0] != ""][1:]]
 
             subtables_assets.extend(subtable_assets)
