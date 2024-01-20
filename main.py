@@ -43,6 +43,7 @@ def build_google_service(path):
 # TODO: Нужно типизировать/классифицировать в таблице с анкеритированием так, чтобы не нужно было свойство unit,
 #       чтобы этот метод тоже, в целом, был не нужен. Прийти должны к чему-то типа того — str(LOA_OPTION)
 def prepare_data(assets: list[Asset]) -> list[Asset]:
+    logger.info(f"preparing data for {str(LOA_OPTION.name)}...")
     match LOA_OPTION:
         case LOA_OPTION.GENERAL:
             domain = Domain([], [])
@@ -84,6 +85,7 @@ def prepare_data(assets: list[Asset]) -> list[Asset]:
                             departments=["Dodo Pizza UAE"])
         case _:
             raise NotImplemented
+    logger.info(f"prepared data for {str(LOA_OPTION.name)}")
     return loa_handler(assets, domain)
 
 
@@ -123,7 +125,9 @@ def survey_to_domain(raw_main_table: list[list[str, ...]]) -> list[Survey, ...]:
 
 @logger.catch()
 def upload(loa_package: list[list[str | bool]], google_service):
+    logger.info(f"uploading data for {str(LOA_OPTION.name)} LOA...")
     google_service.upload_values(loa_package, "'LoA_raw'!A2:Z1000")
+    logger.info(f"uploaded data for {str(LOA_OPTION.name)} LOA")
 
 
 def pack_up(loa: list[Asset]) -> list[list[str, bool, None]]:
@@ -174,45 +178,44 @@ def get_assets_from_google(google_service):
     return assets
 
 
-def loa_collect(google_service, load_with_cache):
-    if (not os.path.isfile("stored.pickle") and load_with_cache) or not load_with_cache:
+def loa_collect(google_service):
+    logger.info("performing collect...")
+    if (not os.path.isfile("stored.pickle") and CACHE_OPTION) or not CACHE_OPTION:
         if not os.path.isfile("stored.pickle"):
             logger.info("seems like there is no cache")
         assets = get_assets_from_google(google_service)
     else:
         assets = get_assets_from_cache()
-    logger.info(f"preparing data for {str(LOA_OPTION.name)}...")
+
     loa = prepare_data(assets)
-    # pprint(loa)
-    # print(len(loa))
-    logger.info(f"prepared data for {str(LOA_OPTION.name)}")
-    logger.info(f"uploading data for {str(LOA_OPTION.name)} LOA...")
+
     upload(pack_up(loa), google_service)
-    logger.info(f"uploaded data for {str(LOA_OPTION.name)} LOA")
-    logger.info("all done, shutting down...")
 
 
 def loa_backsync(google_service):
-    pass
+    logger.info("performing backsync...")
 
 
-def main(load_with_cache: bool = None):
+def main() -> bool:
     logger.debug("retrieving google service...")
     google_service = build_google_service(PATH)
     logger.info("authorized to google")
 
     match MODE:
-        case Modes.COLLECT:   loa_collect(google_service, load_with_cache)
+        case Modes.COLLECT:   loa_collect(google_service)
         case Modes.BACKSYNC:  loa_backsync(google_service)
         case _: raise NotImplemented("There is no such mode yet")
+
+    return True
 
 
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Script to compute LOA, check README")
-    parser.add_argument("mode", metavar="mode", type=str, help="performs update on surveys by info from "
-                                                               "the general LOA")
+    parser.add_argument("mode", metavar="mode", type=str, help="\"Backsync\" - performs update on surveys by "
+                                                               "info from the general LOA. "
+                                                               "\"Collect\" - creates list of assets from surveys")
     parser.add_argument("-c", "--cache", type=str, help="If you want to load from cache, pass \"True\"",
                         choices=["True"])
     parser.add_argument("-d", "--domain", type=str, help="Enter name of domain for which you want to collect LOA, "
@@ -224,7 +227,7 @@ if __name__ == "__main__":
         case "backsync" | "bs" | "back_sync" | "back_synchronization": MODE = Modes.BACKSYNC
         case _:                                                        MODE = Modes.COLLECT
 
-    cache_option = True if args.cache == "True" else False
+    CACHE_OPTION = True if args.cache == "True" else False
 
     match args.domain.upper():
         case "DE" | "ENGINEERING":                                 LOA_OPTION = LoaOptions.ENGINEERING
@@ -241,4 +244,9 @@ if __name__ == "__main__":
 
     logger.info(f"{LOA_OPTION=}")
 
-    main(cache_option)
+    is_ok = main()
+
+    if is_ok:
+        logger.info("everything's done, shutting down...")
+    else:
+        raise Exception("mode function didn't do what's it paid for")
