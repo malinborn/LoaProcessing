@@ -91,10 +91,12 @@ def prepare_data(assets: list[Asset]) -> list[Asset]:
 
 @logger.catch()
 def get_main_table(google_service):
+    logger.debug("retrieving main table, inventory sheet...")
     return google_service.get_values(CONFIG["links"]["general_loa"], "'Анкетирование'!A2:H1000")
 
 
 def collect_assets_from_sub_tables(main_table: list[Survey], google_service):
+    logger.info("collecting assets from sub tables...")
     subtables_assets = list()
 
     bar = IncrementalBar('Countdown', max=len(main_table))
@@ -115,6 +117,7 @@ def collect_assets_from_sub_tables(main_table: list[Survey], google_service):
         bar.next()
         print("")
         sleep(1)  # it is needed to comply with Google API quotas
+    logger.info(f"collected assets from sub tables...")
     return subtables_assets
 
 
@@ -160,21 +163,25 @@ def get_assets_from_cache():
     return assets
 
 
-def get_assets_from_google(google_service):
-    logger.info("loading from google...")
-    logger.debug("retrieving main table, inventory sheet...")
-    raw_main_table: list[list[str, ...]] = get_main_table(google_service)["values"]
-    main_table: list[Survey, ...] = survey_to_domain(raw_main_table)
-    Survey.fill_departments(main_table)
-    # pprint(main_table)
-    logger.info("obtained main table, inventory sheet")
-    logger.info("collecting assets from sub tables...")
-    assets = collect_assets_from_sub_tables(main_table, google_service)
-    # pprint(assets)
-    logger.info(f"collected assets from sub tables...")
+def store_cache(assets):
     logger.info("dumping data into file...")
     with open("stored.pickle", "wb") as fp:
         pickle.dump(assets, fp)
+
+
+def get_assets_from_google(google_service):
+    logger.info("loading from google...")
+
+    raw_main_table: list[list[str, ...]] = get_main_table(google_service)["values"]
+
+    main_table: list[Survey, ...] = survey_to_domain(raw_main_table)
+
+    Survey.fill_departments(main_table)
+
+    assets = collect_assets_from_sub_tables(main_table, google_service)
+
+    store_cache(assets)
+
     return assets
 
 
