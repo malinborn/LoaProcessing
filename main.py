@@ -43,6 +43,86 @@ def build_google_service(path):
     return GoogleClient(path, upload_table_link)
 
 
+def loa_collect(google_service):
+    logger.info("performing collect...")
+    if (not os.path.isfile("stored.pickle") and CACHE_OPTION) or not CACHE_OPTION:
+        if not os.path.isfile("stored.pickle"):
+            logger.info("seems like there is no cache")
+        assets = get_assets_from_google(google_service)
+    else:
+        assets = get_assets_from_cache()
+
+    loa = prepare_data(assets)
+
+    upload(pack_up(loa), google_service)
+
+
+def get_assets_from_cache():
+    logger.debug("loading from file...")
+    with open("stored.pickle", "rb") as fp:
+        assets = pickle.load(fp)
+    return assets
+
+
+def store_cache(assets):
+    logger.info("dumping data into file...")
+    with open("stored.pickle", "wb") as fp:
+        pickle.dump(assets, fp)
+
+
+def get_assets_from_google(google_service):
+    logger.info("loading from google...")
+
+    raw_main_table: list[list[str, ...]] = get_main_table(google_service)["values"]
+
+    main_table: list[Survey, ...] = survey_to_domain(raw_main_table)
+
+    Survey.fill_departments(main_table)
+
+    assets = collect_assets_from_sub_tables(main_table, google_service)
+
+    store_cache(assets)
+
+    return assets
+
+
+@logger.catch()
+def get_main_table(google_service):
+    logger.debug("retrieving main table, inventory sheet...")
+    return google_service.get_values(CONFIG["links"]["general_loa"], "'Анкетирование'!A2:H1000")
+
+
+@logger.catch()
+def survey_to_domain(raw_main_table: list[list[str, ...]]) -> list[Survey, ...]:
+    return [Survey(x) for x in raw_main_table]
+
+
+def collect_assets_from_sub_tables(main_table: list[Survey], google_service):
+    logger.info("collecting assets from sub tables...")
+    subtables_assets = list()
+
+    bar = IncrementalBar('Countdown', max=len(main_table))
+
+    for survey in main_table:
+        try:
+            logger.debug(f"getting data for {survey.department} {survey.unit}...")
+            subtable_raw_assets: list[list] = google_service.get_values(survey.link, "Лист1")["values"]
+
+            logger.debug(f"trying to merge into domain data of {survey.department} {survey.unit}...")
+            subtable_assets: list[Asset] = [Asset.make_from_survey(clarified_row, survey) for clarified_row in
+                                            [row for row in subtable_raw_assets if row[0] != ""][1:]]
+
+            subtables_assets.extend(subtable_assets)
+        except Exception as ex:
+            logger.error(f"couldn't get survey of {survey.department} {survey.unit}"
+                         f"\n{ex}")
+        bar.next()
+        print("")
+        sleep(1)  # it is needed to comply with Google API quotas
+    logger.info(f"collected assets from sub tables...")
+    return subtables_assets
+
+
 # TODO: Нужно типизировать/классифицировать в таблице с анкеритированием так, чтобы не нужно было свойство unit,
 #       чтобы этот метод тоже, в целом, был не нужен. Прийти должны к чему-то типа того — str(LOA_OPTION)
 def prepare_data(assets: list[Asset]) -> list[Asset]:
@@ -93,43 +173,6 @@ def prepare_data(assets: list[Asset]) -> list[Asset]:
 
 
 @logger.catch()
-def get_main_table(google_service):
-    logger.debug("retrieving main table, inventory sheet...")
-    return google_service.get_values(CONFIG["links"]["general_loa"], "'Анкетирование'!A2:H1000")
-
-
-def collect_assets_from_sub_tables(main_table: list[Survey], google_service):
-    logger.info("collecting assets from sub tables...")
-    subtables_assets = list()
-
-    bar = IncrementalBar('Countdown', max=len(main_table))
-
-    for survey in main_table:
-        try:
-            logger.debug(f"getting data for {survey.department} {survey.unit}...")
-            subtable_raw_assets: list[list] = google_service.get_values(survey.link, "Лист1")["values"]
-
-            logger.debug(f"trying to merge into domain data of {survey.department} {survey.unit}...")
-            subtable_assets: list[Asset] = [Asset.make_from_survey(clarified_row, survey) for clarified_row in
-                                            [row for row in subtable_raw_assets if row[0] != ""][1:]]
-
-            subtables_assets.extend(subtable_assets)
-        except Exception as ex:
-            logger.error(f"couldn't get survey of {survey.department} {survey.unit}"
-                         f"\n{ex}")
-        bar.next()
-        print("")
-        sleep(1)  # it is needed to comply with Google API quotas
-    logger.info(f"collected assets from sub tables...")
-    return subtables_assets
-
-
-@logger.catch()
-def survey_to_domain(raw_main_table: list[list[str, ...]]) -> list[Survey, ...]:
-    return [Survey(x) for x in raw_main_table]
-
-
-@logger.catch()
 def upload(loa_package: list[list[str | bool]], google_service):
     logger.info(f"uploading data for {str(LOA_OPTION.name)} LOA...")
     google_service.upload_values(loa_package, "'LoA_raw'!A2:Z1000")
@@ -159,53 +202,17 @@ def pack_up(loa: list[Asset]) -> list[list[str, bool, None]]:
     return package
 
 
-def get_assets_from_cache():
-    logger.debug("loading from file...")
-    with open("stored.pickle", "rb") as fp:
-        assets = pickle.load(fp)
-    return assets
-
-
-def store_cache(assets):
-    logger.info("dumping data into file...")
-    with open("stored.pickle", "wb") as fp:
-        pickle.dump(assets, fp)
-
-
-def get_assets_from_google(google_service):
-    logger.info("loading from google...")
-
-    raw_main_table: list[list[str, ...]] = get_main_table(google_service)["values"]
-
-    main_table: list[Survey, ...] = survey_to_domain(raw_main_table)
-
-    Survey.fill_departments(main_table)
-
-    assets = collect_assets_from_sub_tables(main_table, google_service)
-
-    store_cache(assets)
-
-    return assets
-
-
-def loa_collect(google_service):
-    logger.info("performing collect...")
-    if (not os.path.isfile("stored.pickle") and CACHE_OPTION) or not CACHE_OPTION:
-        if not os.path.isfile("stored.pickle"):
-            logger.info("seems like there is no cache")
-        assets = get_assets_from_google(google_service)
-    else:
-        assets = get_assets_from_cache()
-
-    loa = prepare_data(assets)
-
-    upload(pack_up(loa), google_service)
+def loa_backsync(google_service):
+    logger.info("performing backsync...")
+    general_loa = get_general_loa(google_service)
+    update_packs = make_update_packs(general_loa)
+    make_survey_backups()
+    update_surveys(update_packs)
 
 
 def get_general_loa(google_service) -> list[Asset]:
     general_loa_raw = google_service.get_values(CONFIG["links"]["general_loa"], "LoA!A2:Z1000")["values"]
     general_loa_assets = list()
-
 
 
 def make_update_packs(loa: list[Asset]) -> list[UpdatePack]:
@@ -219,14 +226,6 @@ def make_survey_backups():
 
 def update_surveys(update_packs: list[UpdatePack]):
     pass
-
-
-def loa_backsync(google_service):
-    logger.info("performing backsync...")
-    general_loa = get_general_loa(google_service)
-    update_packs = make_update_packs(general_loa)
-    make_survey_backups()
-    update_surveys(update_packs)
 
 
 def main() -> bool:
