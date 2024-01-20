@@ -77,6 +77,30 @@ class Asset:
                      business_owner=business_owner, purpose=purpose, access_owner=access_owner, comments=comments,
                      department=department, unit=unit, department_and_unit=department_and_unit)
 
+    @staticmethod
+    def make_from_loa_asset(loa_asset: list):
+        name:                str = loa_asset[Asset.NAME_INDEX].strip()
+        type:                str = loa_asset[Asset.TYPE_INDEX]
+        is_in_pci_dss_scope: bool = True if loa_asset[Asset.IS_IN_PCI_DSS_SCOPE_INDEX].lower() == "true" else False
+        has_iid_clients:     bool = True if loa_asset[Asset.HAS_IID_CLIENTS_INDEX].lower() == "true" else False
+        has_iid_employees:   bool = True if loa_asset[Asset.HAS_IID_EMPLOYEES_INDEX].lower() == "true" else False
+        sensitive_data_description: list[str] | str = loa_asset[Asset.SENSITIVE_DATA_DESCRIPTION_INDEX]
+        business_owner:      list[str] | str = loa_asset[Asset.BUSINESS_OWNER_INDEX]
+        purpose:             list[str] | str = loa_asset[Asset.PURPOSE_INDEX]
+        access_owner:        list[str] | str = [loa_asset[Asset.ACCESS_OWNER_INDEX]] if isinstance(
+            loa_asset[Asset.ACCESS_OWNER_INDEX], str) else loa_asset[Asset.ACCESS_OWNER_INDEX].strip(", ")
+
+        # NOT GOING INTO UPDATE PACK
+        comments:            list[str] | str = loa_asset[Asset.COMMENTS_INDEX]
+        department:          str = loa_asset[-3]
+        unit:                str = loa_asset[-2]
+        department_and_unit: str = [loa_asset[-1]] if isinstance(loa_asset[-1], str) else loa_asset[-1].strip("; ")
+
+        return Asset(name=name, type=type, is_in_pci_dss_scope=is_in_pci_dss_scope, has_iid_clients=has_iid_clients,
+                     has_iid_employees=has_iid_employees, sensitive_data_description=sensitive_data_description,
+                     business_owner=business_owner, purpose=purpose, access_owner=access_owner, comments=comments,
+                     department=department, unit=unit, department_and_unit=department_and_unit)
+
     def collapse(self):
         self.sensitive_data_description = Asset._collapse_entity(self.sensitive_data_description)
         self.business_owner = Asset._collapse_entity(self.business_owner)
