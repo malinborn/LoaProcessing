@@ -4,6 +4,7 @@ import pickle
 from progress.bar import IncrementalBar
 from domain.survey import Survey
 from domain.asset import Asset
+from domain.update_pack import UpdatePack
 from google_client import GoogleClient
 from loguru import logger
 from loa_options import LoaOptions
@@ -201,11 +202,14 @@ def loa_collect(google_service):
     upload(pack_up(loa), google_service)
 
 
-def get_general_loa():
-    pass
+def get_general_loa(google_service) -> list[Asset]:
+    general_loa_raw = google_service.get_values(CONFIG["links"]["general_loa"], "LoA!A2:Z1000")["values"]
+    general_loa_assets = list()
 
 
-def make_update_packs():
+
+def make_update_packs(loa: list[Asset]) -> list[UpdatePack]:
+    update_packs: list[UpdatePack] = list()
     pass
 
 
@@ -213,16 +217,16 @@ def make_survey_backups():
     pass
 
 
-def update_surveys():
+def update_surveys(update_packs: list[UpdatePack]):
     pass
 
 
 def loa_backsync(google_service):
     logger.info("performing backsync...")
-    get_general_loa()
-    make_update_packs()
+    general_loa = get_general_loa(google_service)
+    update_packs = make_update_packs(general_loa)
     make_survey_backups()
-    update_surveys()
+    update_surveys(update_packs)
 
 
 def main() -> bool:
@@ -242,11 +246,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Script to compute LOA, check README")
     parser.add_argument("-c", "--cache", action="store_true",
                         help="Pass this flag if you want to perform collect mode from cache")
-    parser.add_argument("-d", "--domain", type=str,
+    parser.add_argument("-d", "--domain", type=str, default="GENERAL",
                         help="Enter name of domain for which you want to collect LOA, "
                              "for example, \"DE\", \"Finance\" etc. GENERAL is default value. "
                              "Make sure that you configured link to spreadsheet in config.jsom")
     parser.add_argument("--mode", metavar="MODE", type=str, choices=["collect", "backsync"],
+                        default="COLLECT",
                         help="\"Collect\" - creates list of assets from surveys, that is default mode. "
                              "\"Backsync\" - performs update on surveys by info from the general LOA. ")
     args = parser.parse_args()
@@ -254,7 +259,7 @@ if __name__ == "__main__":
     CACHE_OPTION = args.cache
 
     match args.mode.upper():
-        case "backsync" | "bs" | "back_sync" | "back_synchronization": MODE = Modes.BACKSYNC
+        case "BACKSYNC" | "BS" | "BACK_SYNC" | "BACK_SYNCHRONIZATION": MODE = Modes.BACKSYNC
         case _:                                                        MODE = Modes.COLLECT
 
     match args.domain.upper():
