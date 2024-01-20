@@ -204,20 +204,23 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Script to compute LOA, check README")
     parser.add_argument("--cache", type=str, help="If you want to load from cache, pass \"True\"")
     parser.add_argument("--domain", type=str, help="Enter name of domain for which you want to collect LOA, "
-                                                   "for example, \"GDPR\", \"DE\", \"Finance\" etc. GENERAL is default value. "
+                                                   "for example, \"DE\", \"Finance\" etc. GENERAL is default value. "
                                                    "Make sure that you configured link to spreadsheet in config.jsom")
     args = parser.parse_args()
 
     cache_option = True if args.cache == "True" else False
 
     match args.domain.upper():
-        case "DE" | "ENGINEERING":
-            LOA_OPTION = LoaOptions.ENGINEERING
-        case "FN" | "FINANCE":
-            LOA_OPTION = LoaOptions.FINANCE
-        case "CRP" | "CORPORATE":
-            LOA_OPTION = LoaOptions.CORPORATE
-        case _:
-            LOA_OPTION = LoaOptions.GENERAL
+        case "DE" | "ENGINEERING":                                 LOA_OPTION = LoaOptions.ENGINEERING
+        case "FN" | "FINANCE":                                     LOA_OPTION = LoaOptions.FINANCE
+        case "DPEU" | "DODO PIZZA EURASIA" | "DODO_PIZZA_EURASIA": LOA_OPTION = LoaOptions.DODO_PIZZA_EURASIA
+        case "CRP" | "CORPORATE":                                  LOA_OPTION = LoaOptions.CORPORATE
+        case "MRKT" | "MARKETING":                                 LOA_OPTION = LoaOptions.MARKETING
+        case "DI" | "DRINKIT":                                     LOA_OPTION = LoaOptions.DRINKIT
+        case "KB" | "KEBSTER":                                     LOA_OPTION = LoaOptions.KEBSTER
+        case "MNS" | "MENUSA":                                     LOA_OPTION = LoaOptions.MENUSA
+        case "DIUAE" | "DRINKIT UAE" | "DRINKIT_UAE":              LOA_OPTION = LoaOptions.DRINKIT_UAE
+        case "DPUAE" | "DODO PIZZA UAE" | "DODO_PIZZA_UAE":        LOA_OPTION = LoaOptions.DODO_PIZZA_UAE
+        case _:                                                    LOA_OPTION = LoaOptions.GENERAL
     logger.info(f"{LOA_OPTION=}")
     main(cache_option)
