@@ -122,14 +122,14 @@ class Asset:
                    f"{str(self.is_in_pci_dss_scope).ljust(5)} | "
                    f"{str(self.has_iid_clients).ljust(5)} | "
                    f"{str(self.has_iid_employees).ljust(5)} | "
-                   f"{shorten_text_repr(self.sensitive_data_description, 25)} | "
-                   f"{shorten_text_repr(self.business_owner, 25)} | "
-                   f"{shorten_text_repr(self.purpose, 25)} | "
-                   f"{shorten_text_repr(self.access_owner, 25)} | "
-                   f"{shorten_text_repr(self.department, 25)} | "
-                   f"{shorten_text_repr(self.unit, 25)} | "
-                   f"{shorten_text_repr(self.department_and_unit, 30)} | "
-                   f"{shorten_text_repr(self.comments, 25)} | ")
+                   f"{shorten_text_repr(str(self.sensitive_data_description), 25)} | "
+                   f"{shorten_text_repr(str(self.business_owner), 25)} | "
+                   f"{shorten_text_repr(str(self.purpose), 25)} | "
+                   f"{shorten_text_repr(str(self.access_owner), 25)} | "
+                   f"{shorten_text_repr(str(self.department), 25)} | "
+                   f"{shorten_text_repr(str(self.unit), 25)} | "
+                   f"{shorten_text_repr(str(self.department_and_unit), 30)} | "
+                   f"{shorten_text_repr(str(self.comments), 25)} | ")
         return message
 
 
