@@ -39,6 +39,8 @@ def build_google_service(path):
     return GoogleClient(path, upload_table_link)
 
 
+# TODO: Нужно типизировать/классифицировать в таблице с анкеритированием так, чтобы не нужно было свойство unit,
+#       чтобы этот метод тоже, в целом, был не нужен. Прийти должны к чему-то типа того — str(LOA_OPTION)
 def prepare_data(assets: list[Asset]) -> list[Asset]:
     match LOA_OPTION:
         case LOA_OPTION.GENERAL:
@@ -48,7 +50,7 @@ def prepare_data(assets: list[Asset]) -> list[Asset]:
                 units=["IT Eurasia People&Communications", "IT Eurasia B2B", "NSFW (Not safe for work)",
                        "SE (Seven-eleven)",
                        "Rocket Science", "k9", "HR Automation", "Slippers of Mimir", "IT Team", "IT"],
-                departments=["CVM", "CVM Dev Core", "Vulnerable", "Guilds", "Platform"])
+                departments=["CVM", "CVM Dev Core", "Vulnerable", "Guilds", "Platform", "DevRel"])
         case LOA_OPTION.GDPR:
             raise NotImplemented
         case LOA_OPTION.FINANCE:
@@ -57,6 +59,28 @@ def prepare_data(assets: list[Asset]) -> list[Asset]:
         case LOA_OPTION.CORPORATE:
             domain = Domain(units=[],
                             departments=["Finance", "HR Global", "Legal"])
+        case LoaOptions.MARKETING:
+            domain = Domain(units=[],
+                            departments=["Marketing", "Global Marketing"])
+        case LoaOptions.DODO_PIZZA_EURASIA:
+            domain = Domain(units=[],
+                            departments=["Business Development", "Quality Management", "Supply Chain", "DCM",
+                                         "HR Eurasia"])
+        case LoaOptions.DRINKIT:
+            domain = Domain(units=[],
+                            departments=["Drinkit"])
+        case LoaOptions.KEBSTER:
+            domain = Domain(units=[],
+                            departments=["Kebster"])
+        case LoaOptions.MENUSA:
+            domain = Domain(units=[],
+                            departments=["Menusa"])
+        case LoaOptions.DRINKIT_UAE:
+            domain = Domain(units=[],
+                            departments=["Drinkit UAE"])
+        case LoaOptions.DODO_PIZZA_UAE:
+            domain = Domain(units=[],
+                            departments=["Dodo Pizza UAE"])
         case _:
             raise NotImplemented
     return loa_handler(assets, domain)
@@ -89,8 +113,6 @@ def collect_assets_from_sub_tables(main_table: list[Survey], google_service):
         print("")
         sleep(1)  # it is needed to comply with Google API quotas
     return subtables_assets
-
-
 
 
 @logger.catch()
