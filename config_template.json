@@ -2,9 +2,15 @@
   "links": {
     "general_loa": "",
     "gdpr_loa": "",
-    "finance_loa": ""
-  },
-  "asset_entities": [
-    ""
-  ]
+    "finance_loa": "",
+    "engineering_loa": "",
+    "corporate_loa": "",
+    "dodo_pizza_eurasia_loa": "",
+    "marketing_loa": "",
+    "drinkit_loa": "",
+    "kebster_loa": "",
+    "menusa_loa": "",
+    "drinkit_uae_loa": "",
+    "dodo_pizza_uae_loa": ""
+  }
 }
