@@ -174,29 +174,37 @@ def get_assets_from_google(google_service):
     return assets
 
 
-def main(load_with_cache: bool = None):
-    logger.debug("retrieving google service...")
-    google_service = build_google_service(PATH)
-    logger.info("authorized to google")
-
+def loa_collect(google_service, load_with_cache):
     if (not os.path.isfile("stored.pickle") and load_with_cache) or not load_with_cache:
         if not os.path.isfile("stored.pickle"):
             logger.info("seems like there is no cache")
         assets = get_assets_from_google(google_service)
     else:
         assets = get_assets_from_cache()
-
     logger.info(f"preparing data for {str(LOA_OPTION.name)}...")
     loa = prepare_data(assets)
     # pprint(loa)
     # print(len(loa))
     logger.info(f"prepared data for {str(LOA_OPTION.name)}")
-
     logger.info(f"uploading data for {str(LOA_OPTION.name)} LOA...")
     upload(pack_up(loa), google_service)
     logger.info(f"uploaded data for {str(LOA_OPTION.name)} LOA")
-
     logger.info("all done, shutting down...")
+
+
+def loa_backsync(google_service):
+    pass
+
+
+def main(load_with_cache: bool = None):
+    logger.debug("retrieving google service...")
+    google_service = build_google_service(PATH)
+    logger.info("authorized to google")
+
+    match MODE:
+        case Modes.COLLECT:   loa_collect(google_service, load_with_cache)
+        case Modes.BACKSYNC:  loa_backsync(google_service)
+        case _: raise NotImplemented("There is no such mode yet")
 
 
 if __name__ == "__main__":
