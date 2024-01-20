@@ -204,15 +204,20 @@ def pack_up(loa: list[Asset]) -> list[list[str, bool, None]]:
 
 def loa_backsync(google_service):
     logger.info("performing backsync...")
-    general_loa = get_general_loa(google_service)
-    update_packs = make_update_packs(general_loa)
+    general_loa: list[any] = get_general_loa(google_service)
+    assets: list[Asset] = parse_to_domain_assets(general_loa)
+    update_packs: list[UpdatePack] = make_update_packs(assets)
     make_survey_backups()
     update_surveys(update_packs)
 
 
-def get_general_loa(google_service) -> list[Asset]:
+def get_general_loa(google_service) -> list[any]:
     general_loa_raw = google_service.get_values(CONFIG["links"]["general_loa"], "LoA!A2:Z1000")["values"]
-    general_loa_assets = list()
+    return general_loa_raw
+
+
+def parse_to_domain_assets(general_loa: list[any]) -> list[Asset]:
+    return [Asset.make_from_loa_asset(loa_asset) for loa_asset in general_loa]
 
 
 def make_update_packs(loa: list[Asset]) -> list[UpdatePack]:
