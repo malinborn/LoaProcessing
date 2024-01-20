@@ -7,6 +7,7 @@ from domain.asset import Asset
 from google_client import GoogleClient
 from loguru import logger
 from loa_options import LoaOptions
+from modes import Modes
 from pprint import pprint
 from time import sleep
 from handlers import loa_handler
@@ -202,11 +203,18 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Script to compute LOA, check README")
-    parser.add_argument("--cache", type=str, help="If you want to load from cache, pass \"True\"")
-    parser.add_argument("--domain", type=str, help="Enter name of domain for which you want to collect LOA, "
+    parser.add_argument("mode", metavar="mode", type=str, help="performs update on surveys by info from "
+                                                               "the general LOA")
+    parser.add_argument("-c", "--cache", type=str, help="If you want to load from cache, pass \"True\"",
+                        choices=["True"])
+    parser.add_argument("-d", "--domain", type=str, help="Enter name of domain for which you want to collect LOA, "
                                                    "for example, \"DE\", \"Finance\" etc. GENERAL is default value. "
                                                    "Make sure that you configured link to spreadsheet in config.jsom")
     args = parser.parse_args()
+
+    match args.mode.upper():
+        case "backsync" | "bs" | "back_sync" | "back_synchronization": MODE = Modes.BACKSYNC
+        case _:                                                        MODE = Modes.COLLECT
 
     cache_option = True if args.cache == "True" else False
 
@@ -222,5 +230,7 @@ if __name__ == "__main__":
         case "DIUAE" | "DRINKIT UAE" | "DRINKIT_UAE":              LOA_OPTION = LoaOptions.DRINKIT_UAE
         case "DPUAE" | "DODO PIZZA UAE" | "DODO_PIZZA_UAE":        LOA_OPTION = LoaOptions.DODO_PIZZA_UAE
         case _:                                                    LOA_OPTION = LoaOptions.GENERAL
+
     logger.info(f"{LOA_OPTION=}")
+
     main(cache_option)
