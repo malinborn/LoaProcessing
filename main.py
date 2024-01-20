@@ -22,6 +22,7 @@ with open("config.json", "r") as fp:
 
 
 def build_google_service(path):
+    logger.debug("retrieving google service...")
     match LOA_OPTION:
         case LoaOptions.GENERAL:            upload_table_link = CONFIG["links"]["general_loa"]
         case LoaOptions.GDPR:               upload_table_link = CONFIG["links"]["gdpr_loa"]
@@ -37,6 +38,7 @@ def build_google_service(path):
         case LoaOptions.DODO_PIZZA_UAE:     upload_table_link = CONFIG["links"]["dodo_pizza_uae_loa"]
         case _: raise NotImplemented
 
+    logger.info("authorized to google")
     return GoogleClient(path, upload_table_link)
 
 
@@ -199,14 +201,32 @@ def loa_collect(google_service):
     upload(pack_up(loa), google_service)
 
 
+def get_general_loa():
+    pass
+
+
+def make_update_packs():
+    pass
+
+
+def make_survey_backups():
+    pass
+
+
+def update_surveys():
+    pass
+
+
 def loa_backsync(google_service):
     logger.info("performing backsync...")
+    get_general_loa()
+    make_update_packs()
+    make_survey_backups()
+    update_surveys()
 
 
 def main() -> bool:
-    logger.debug("retrieving google service...")
     google_service = build_google_service(PATH)
-    logger.info("authorized to google")
 
     match MODE:
         case Modes.COLLECT:   loa_collect(google_service)
@@ -250,6 +270,7 @@ if __name__ == "__main__":
         case "DPUAE" | "DODO PIZZA UAE" | "DODO_PIZZA_UAE":        LOA_OPTION = LoaOptions.DODO_PIZZA_UAE
         case _:                                                    LOA_OPTION = LoaOptions.GENERAL
 
+    logger.info(f"{MODE=}")
     logger.info(f"{LOA_OPTION=}")
 
     is_ok = main()
