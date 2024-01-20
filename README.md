@@ -48,3 +48,20 @@ Make a copy of "config_template.json" and name it "config.json".
 Fill in IDs of Google spreadsheets, where to you want to upload data. 
 
 On a spreadsheet from those add a sheet named "LoA_raw".
+___
+### How to add new domain
+1. Add new domain variable to Enum `LoaOptions`, keep the notation
+2. Than add new option to CLI
+	1. Add new statement into match-case tree
+	2. Put new variable from step 1 into global variable `LOA_OPTION`
+3. Add new key-value pair to config file. 
+    - You should update both config and template. 
+    - Here you should put an ID of your google spreadsheet, that will contain a new domain LOA 
+	- Note that every domain LOA have to have its own table!
+4. Go to `main.py` file and add receiving of new table ID to `build_google_service` function into match-case tree 
+5. In `main.py` update `prepare_data` function with new domain. 
+	- It posses two properties — departments and units
+	- Keeping both empty means "each existing asset"
+	- Adding a department you mean "add each asset of each unit of the department"
+	- Adding a unit you mean "add each asset of the unit"
+6. Done! 
