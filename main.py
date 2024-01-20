@@ -22,18 +22,19 @@ with open("config.json", "r") as fp:
 
 def build_google_service(path):
     match LOA_OPTION:
-        case LoaOptions.GENERAL:
-            upload_table_link = CONFIG["links"]["general_loa"]
-        case LoaOptions.GDPR:
-            upload_table_link = CONFIG["links"]["gdpr_loa"]
-        case LoaOptions.FINANCE:
-            upload_table_link = CONFIG["links"]["finance_loa"]
-        case LoaOptions.ENGINEERING:
-            upload_table_link = CONFIG["links"]["engineering_loa"]
-        case LoaOptions.CORPORATE:
-            upload_table_link = CONFIG["links"]["corporate_loa"]
-        case _:
-            raise NotImplemented
+        case LoaOptions.GENERAL:            upload_table_link = CONFIG["links"]["general_loa"]
+        case LoaOptions.GDPR:               upload_table_link = CONFIG["links"]["gdpr_loa"]
+        case LoaOptions.FINANCE:            upload_table_link = CONFIG["links"]["finance_loa"]
+        case LoaOptions.ENGINEERING:        upload_table_link = CONFIG["links"]["engineering_loa"]
+        case LoaOptions.CORPORATE:          upload_table_link = CONFIG["links"]["corporate_loa"]
+        case LoaOptions.MARKETING:          upload_table_link = CONFIG["links"]["marketing_loa"]
+        case LoaOptions.DODO_PIZZA_EURASIA: upload_table_link = CONFIG["links"]["dodo_pizza_eurasia_loa"]
+        case LoaOptions.DRINKIT:            upload_table_link = CONFIG["links"]["drinkit_loa"]
+        case LoaOptions.KEBSTER:            upload_table_link = CONFIG["links"]["kebster_loa"]
+        case LoaOptions.MENUSA:             upload_table_link = CONFIG["links"]["menusa_loa"]
+        case LoaOptions.DRINKIT_UAE:        upload_table_link = CONFIG["links"]["drinkit_uae_loa"]
+        case LoaOptions.DODO_PIZZA_UAE:     upload_table_link = CONFIG["links"]["dodo_pizza_uae_loa"]
+        case _: raise NotImplemented
 
     return GoogleClient(path, upload_table_link)
 
