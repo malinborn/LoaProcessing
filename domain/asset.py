@@ -27,23 +27,28 @@ class Asset:
         self.comments: list[str] | str = list()
 
         try:
-            if raw_asset[Asset.sensitive_data_description_index]: self.sensitive_data_description.append(raw_asset[Asset.sensitive_data_description_index])
+            if raw_asset[Asset.sensitive_data_description_index]:
+                self.sensitive_data_description.append(raw_asset[Asset.sensitive_data_description_index])
         except IndexError:
             ""
         try:
-            if raw_asset[Asset.business_owner_index]: self.business_owner.append(raw_asset[Asset.business_owner_index])
+            if raw_asset[Asset.business_owner_index]:
+                self.business_owner.append(raw_asset[Asset.business_owner_index])
         except IndexError:
             ""
         try:
-            if raw_asset[Asset.purpose_index]: self.purpose.append(raw_asset[Asset.purpose_index])
+            if raw_asset[Asset.purpose_index]:
+                self.purpose.append(raw_asset[Asset.purpose_index])
         except IndexError:
             ""
         try:
-            if raw_asset[Asset.access_owner_index]: self.access_owner.append(raw_asset[Asset.access_owner_index])
+            if raw_asset[Asset.access_owner_index]:
+                self.access_owner.append(raw_asset[Asset.access_owner_index])
         except IndexError:
             ""
         try:
-            if raw_asset[Asset.comments_index]: self.comments.append(raw_asset[Asset.comments_index])
+            if raw_asset[Asset.comments_index]:
+                self.comments.append(raw_asset[Asset.comments_index])
         except IndexError:
             ""
 
