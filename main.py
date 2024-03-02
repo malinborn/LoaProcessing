@@ -303,7 +303,7 @@ if __name__ == "__main__":
         case _:                                                        MODE = Modes.COLLECT
 
     match args.domain.upper():
-        case "DE" | "ENGINEERING":                                 LOA_OPTION = LoaOptions.ENGINEERING
+        case "DE" | "ENGINEERING" | "DODO ENGINEERING":            LOA_OPTION = LoaOptions.ENGINEERING
         case "FN" | "FINANCE":                                     LOA_OPTION = LoaOptions.FINANCE
         case "DPEU" | "DODO PIZZA EURASIA" | "DODO_PIZZA_EURASIA": LOA_OPTION = LoaOptions.DODO_PIZZA_EURASIA
         case "CRP" | "CORPORATE":                                  LOA_OPTION = LoaOptions.CORPORATE
