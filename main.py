@@ -53,7 +53,7 @@ def loa_collect(google_service):
     else:
         assets = get_assets_from_cache()
 
-    loa = prepare_data(assets)
+    loa: list[Asset, ...] = prepare_data(assets)
 
     upload(pack_up(loa), google_service)
 
@@ -107,7 +107,7 @@ def collect_assets_from_sub_tables(main_table: list[Survey], google_service):
     for survey in main_table:
         try:
             logger.debug(f"getting data for {survey.department} {survey.unit}...")
-            subtable_raw_assets: list[list] = google_service.get_values(survey.link, "Лист1")["values"]
+            subtable_raw_assets: list[list[str, ...]] = google_service.get_values(survey.link, "Лист1")["values"]
 
             logger.debug(f"trying to merge into domain data of {survey.department} {survey.unit}...")
             subtable_assets: list[Asset] = [Asset.make_from_survey(clarified_row, survey) for clarified_row in
