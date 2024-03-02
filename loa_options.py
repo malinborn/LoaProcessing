@@ -14,3 +14,4 @@ class LoaOptions(Enum):
     DRINKIT_UAE = 10
     DODO_PIZZA_UAE = 11
     MENUSA = 12
+    IMF = 13

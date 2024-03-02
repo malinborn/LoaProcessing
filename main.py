@@ -37,6 +37,7 @@ def build_google_service(path):
         case LoaOptions.MENUSA:             upload_table_link = CONFIG["links"]["menusa_loa"]
         case LoaOptions.DRINKIT_UAE:        upload_table_link = CONFIG["links"]["drinkit_uae_loa"]
         case LoaOptions.DODO_PIZZA_UAE:     upload_table_link = CONFIG["links"]["dodo_pizza_uae_loa"]
+        case LoaOptions.IMF:                upload_table_link = CONFIG["links"]["imf_loa"]
         case _: raise NotImplemented
 
     logger.info("authorized to google")
@@ -166,6 +167,9 @@ def prepare_data(assets: list[Asset]) -> list[Asset]:
         case LoaOptions.DODO_PIZZA_UAE:
             domain = Domain(units=[],
                             departments=["Dodo Pizza UAE"])
+        case LoaOptions.IMF:
+            domain = Domain(units=[],
+                            departments=["Internation Master Franchising"])
         case _:
             raise NotImplemented
     logger.info(f"prepared data for {str(LOA_OPTION.name)}")
@@ -303,6 +307,7 @@ if __name__ == "__main__":
         case "FN" | "FINANCE":                                     LOA_OPTION = LoaOptions.FINANCE
         case "DPEU" | "DODO PIZZA EURASIA" | "DODO_PIZZA_EURASIA": LOA_OPTION = LoaOptions.DODO_PIZZA_EURASIA
         case "CRP" | "CORPORATE":                                  LOA_OPTION = LoaOptions.CORPORATE
+        case "IMF":                                                LOA_OPTION = LoaOptions.IMF
         case "MRKT" | "MARKETING":                                 LOA_OPTION = LoaOptions.MARKETING
         case "DI" | "DRINKIT":                                     LOA_OPTION = LoaOptions.DRINKIT
         case "KB" | "KEBSTER":                                     LOA_OPTION = LoaOptions.KEBSTER
