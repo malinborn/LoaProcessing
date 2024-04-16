@@ -28,7 +28,7 @@ class Asset:
     comments:                   list[str] | str
     department:                 str
     unit:                       str
-    department_and_unit:        str
+    department_and_unit:        list[str] | str
 
     @staticmethod
     def make_from_survey(raw_asset: list[str | bool | None], survey: Survey):
@@ -88,13 +88,13 @@ class Asset:
         business_owner:      list[str] | str = loa_asset[Asset.BUSINESS_OWNER_INDEX]
         purpose:             list[str] | str = loa_asset[Asset.PURPOSE_INDEX]
         access_owner:        list[str] | str = [loa_asset[Asset.ACCESS_OWNER_INDEX]] if isinstance(
-            loa_asset[Asset.ACCESS_OWNER_INDEX], str) else loa_asset[Asset.ACCESS_OWNER_INDEX].strip(", ")
+            loa_asset[Asset.ACCESS_OWNER_INDEX], str) else loa_asset[Asset.ACCESS_OWNER_INDEX].split(", ")
 
         # NOT GOING INTO UPDATE PACK
         comments:            list[str] | str = loa_asset[Asset.COMMENTS_INDEX]
         department:          str = loa_asset[-3]
         unit:                str = loa_asset[-2]
-        department_and_unit: str = [loa_asset[-1]] if isinstance(loa_asset[-1], str) else loa_asset[-1].strip("; ")
+        department_and_unit: list[str] = [x.strip() for x in loa_asset[-1].split("; ")]
 
         return Asset(name=name, type=type, is_in_pci_dss_scope=is_in_pci_dss_scope, has_iid_clients=has_iid_clients,
                      has_iid_employees=has_iid_employees, sensitive_data_description=sensitive_data_description,
