@@ -427,7 +427,7 @@ def upload_update_packs(update_packs: list[UpdatePack], google_client: GoogleCli
         sleep(1)
 
 
-def loa_clear(google_service):
+def loa_clean(google_service):
     logger.info("performing cleaning on PR sheets...")
 
     general_loa: list = get_general_loa(google_service)
@@ -450,7 +450,7 @@ def main() -> bool:
         case Modes.BACKSYNC:
             loa_backsync(google_service)
         case Modes.CLEAR:
-            loa_clear(google_service)
+            loa_clean(google_service)
         case _:
             raise NotImplemented("There is no such mode yet")
 
